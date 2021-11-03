@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path").win32;
-const process = require("process");
 
 const folder = path.join(__dirname, "secret-folder");
 const filePath = (filename) => path.join(folder, filename);
