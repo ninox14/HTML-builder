@@ -24,8 +24,12 @@ readTemplateStream
 readTemplateStream.on('close', async () => {
   const response = await constructHTML();
   response ? console.log(response) : console.log(response, 'not cool');
-  // console.log(templateData);
   bundleStyles(stylesFolder, projectFolder);
+
+  copyFolder(
+    pthCnstr('assets', __dirname),
+    path.join(__dirname, 'project-dist', 'assets')
+  );
 });
 
 async function constructHTML() {
@@ -33,7 +37,11 @@ async function constructHTML() {
   await fsp.mkdir(projectFolder, { recursive: true });
   let response = await getDataAndReplace(componentFiles);
 
-  await fsp.writeFile(pthCnstr('index.html', projectFolder), templateData, 'utf-8');
+  await fsp.writeFile(
+    pthCnstr('index.html', projectFolder),
+    templateData,
+    'utf-8'
+  );
   return response;
 }
 
@@ -59,7 +67,7 @@ async function getDataAndReplace(fileArray) {
   }
 }
 
-function bundleStyles (srcFolder, destFolder) {
+function bundleStyles(srcFolder, destFolder) {
   fs.readdir(srcFolder, { withFileTypes: true }, async (err, files) => {
     if (err) {
       console.error(err);
@@ -79,4 +87,42 @@ function bundleStyles (srcFolder, destFolder) {
     });
     console.log('done?');
   });
+}
+
+async function copyFolder(targetPath, destPath) {
+  await fsp.mkdir(destPath, { recursive: true });
+  const folderContent = await fsp.readdir(targetPath, { withFileTypes: true });
+  for (let file of folderContent) {
+    if (file.isDirectory()) {
+      copyFolder(
+        path.join(targetPath, file.name),
+        path.join(destPath, file.name)
+      );
+    } else {
+      await fsp.copyFile(
+        pthCnstr(file.name, targetPath),
+        pthCnstr(file.name, destPath)
+      );
+      console.log(file.name, 'copied');
+    }
+  }
+  const destContent = await fsp.readdir(destPath, { withFileTypes: true });
+  compareFolders(folderContent, destContent, destPath);
+}
+
+function compareFolders(source, dest, destFolder) {
+  const sourceNamesArr = source.map((file) => (file = file.name));
+  const destNamesArr = dest.map((file) => (file = file.name));
+  const intersection = destNamesArr.filter(
+    (file) => !sourceNamesArr.includes(file)
+  );
+  if (!intersection[0]) {
+    return;
+  } else {
+    intersection.map((file) => {
+      fsp
+        .unlink(pthCnstr(file, destFolder))
+        .then(() => console.log(file, ' removed'));
+    });
+  }
 }
