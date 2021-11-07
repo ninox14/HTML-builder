@@ -1,7 +1,6 @@
 const fs = require('fs');
 const fsp = require('fs/promises');
 const path = require('path').win32;
-const process = require('process');
 
 const projectFolder = path.join(__dirname, 'project-dist');
 const stylesFolder = path.join(__dirname, 'styles');
