@@ -24,5 +24,5 @@ rl.on('line', (line) => {
   stream.write('\n' + line);
 });
 process.on('exit', () => {
-  console.log('Without furhter interruption lets selebrate and suck some ...!');
+  console.log('Without furhter interruption lets celebrate and suck some ...!');
 });
